@@ -1,0 +1,2 @@
+#ChressKill
+#这是一个CocosCreator项目，要运行需要先建一个项目，然后把里面的assets文件夹替换
