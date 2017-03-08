@@ -87,8 +87,6 @@ cc.Class({
         return str;
     },
     onChessTouch:function(event){
-        test();
-        test2();
         //判断是否轮到操作
         if(!this.gameControll.isMyOrder()) return;
         //如果没打开则打开
@@ -130,10 +128,4 @@ cc.Class({
         this.selectSpNode.active = enable;
     }
 });
-function test(){
-    cc.log("let me test",this);    
-}
 
-function test2(){
-    cc.log("let me test2",this);    
-}

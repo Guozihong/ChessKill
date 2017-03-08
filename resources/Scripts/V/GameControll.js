@@ -108,7 +108,7 @@ cc.Class({
         for(var i in chessArr){
             this.userChessData.push(chessArr[i].length);
         }
-        this.curUserChessNumsLabel.stirng = chessArr[0].length;
+        this.curUserChessNumsLabel.string = chessArr[0].length;
     },
     //根据玩家人数，获取各自的初始棋子
     getChessConfig:function(){
@@ -307,13 +307,16 @@ cc.Class({
         return true;
     },
     eatChess:function(chessNode){
-        this.moveLastChessToCur(chessNode);
         var curChessNodeScript = this.getScriptByChessNode(chessNode);
-        if(curChessNodeScript.chessData.playerIndex != -1){
+        //判断是不是自己的棋子被吃了，如果是则数量减一
+        if(curChessNodeScript.chessData && curChessNodeScript.chessData.playerIndex != -1){
             this.userChessData[curChessNodeScript.chessData.playerIndex] --;
-            if(curChessNodeScript.chessData.playerIndex == this.playerIndex) 
+            if(curChessNodeScript.chessData.playerIndex == this.playerIndex){
                 this.curUserChessNumsLabel.string = this.userChessData[curChessNodeScript.chessData.playerIndex];
+            } 
         }
+        //交换两个棋子数据
+        this.moveLastChessToCur(chessNode);
     },
     //交换位置
     moveLastChessToCur:function(chessNode){
