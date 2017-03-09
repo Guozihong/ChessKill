@@ -78,6 +78,7 @@ cc.Class({
         this.playerIndex = UserMO.get("playerIndex");        
         //获取单个玩家棋子数据
         var chessArr = this.getChessConfig();
+        //setUserChessNums 放在initPanel前
         this.setUserChessNums(chessArr);
         this.initPanel();
         this.createCheckerboard(chessArr);
@@ -85,10 +86,11 @@ cc.Class({
         this.mainControll.getSocketServerMediator().freshOtherUserCheckBoard(JSON.stringify(this.chessBoardData),this.playerNums);
     },
     initPanel:function(){
+        //设置面板大小
         var size = this.getCheckerboardSize();
         this.node.width = size.x;
         this.node.height = size.y;
-
+        //设置颜色栏
         this.userColorNode.active = true;
         this.userColorNode.getChildByName("userColor").color = PlayerColorConfig[this.playerIndex];
         this.setOtherPlayerColor();
@@ -99,6 +101,7 @@ cc.Class({
         this.playerIndex = UserMO.get("playerIndex");        
         //获取单个玩家棋子数据
         var chessArr = this.getChessConfig();
+        //setUserChessNums 放在initPanel前
         this.setUserChessNums(chessArr);
         this.initPanel();
         this.showCheckBoard(JSON.parse(params.checkBoardArr));
