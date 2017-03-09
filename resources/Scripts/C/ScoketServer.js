@@ -57,6 +57,11 @@ var ScoketServer = cc.Class({
             cc.log("playerIndex:",playerIndex);
             NoticeCenter.dispatchEvent("playerIndex",playerIndex);
         });
+        //解散房间
+        socket.on("disBandRoom",function(data){
+            cc.log("disBandRoom");
+            NoticeCenter.dispatchEvent("disBandRoom");
+        });
         //设置面板
         socket.on("setPanel",function(setData){
             cc.log("setPanel:",setData);
@@ -119,7 +124,8 @@ var ScoketServer = cc.Class({
         this.roomName = roomName;
     },   
     exitRoom:function(roomName){
-        this.socket.emit("leaveRoom",{roomName:roomName});
+        var userName = UserMO.get("userName");
+        this.socket.emit("leaveRoom",{userName:userName,roomName:roomName});
         this.roomName = "";
     },   
     freshOtherUserCheckBoard:function(checkBoardArr,playerNums){
@@ -131,6 +137,11 @@ var ScoketServer = cc.Class({
     },
     setPanel:function(type){
         this.socket.emit("setPanel",{roomName:this.roomName,type:type});
-    }
+    },
+    //解散房间
+    disBandRoom:function(roomName){
+        var userName = UserMO.get("userName");
+        this.socket.emit("disBandRoom",{roomName:this.roomName,userName:userName});
+    },
 });
 module.exports = ScoketServer;

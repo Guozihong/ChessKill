@@ -1,6 +1,7 @@
 
 var NoticeCenter = require("NoticeCenter");
 var Display = require("Display");
+var UserMO = require("UserMO");
 
 var BlackNodeMediator = cc.Class({
     extends:cc.Component,
@@ -27,34 +28,35 @@ var BlackNodeMediator = cc.Class({
     },
     initEvent:function(){
         var self = this;
-        NoticeCenter.addEventListener("roomsListChange",function(event){
-            cc.log("roomsListChange");
-            self.freshRoomsListPanel(event.args);
-        });
+        // NoticeCenter.addEventListener("roomsListChange",function(event){
+        //     cc.log("roomsListChange");
+        //     self.freshRoomsListPanel(event.args);
+        // });
     },
     setMainControll:function(pointer){
         this.mainControll = pointer;
     },
+    //设置联网界面
     initConnectServerPanel:function(){
         this.promptLabelNode.active = false;
         this.buttonLayoutNode.active = true;
     },
+    //设置未联网界面
     initDisConnectServerPanel:function(){
         this.promptLabelNode.active = true;
         this.buttonLayoutNode.active = false;
     },
-    freshRoomsListPanel:function(roomsArr){
-        var self = this;
-        this.roomListNode.active = true;
-        this.roomListNode.getComponent("RoomsListNodeMediator").setData(roomsArr,function(roomName){
-            self.joinRoom(roomName);
-        });
-    },
+    //创建房间
     onCreateRoomBtn:function(event){
         this.addInputUserNamePanel();
     },
+    //房间列表按钮
     onRoomListBtn:function(event){
+        var self = this;
         this.roomListNode.active = true;
+        this.roomListNode.getComponent("RoomsListNodeMediator").setData(function(roomName){
+            self.joinRoom(roomName);
+        });
         this.mainControll.getSocketServerMediator().getRoomsList();
     },
     onExitBtn:function(event){
@@ -74,6 +76,7 @@ var BlackNodeMediator = cc.Class({
         });
         this.node.addChild(inputNameNode);
     },
+    //设置房间数据
     initRoomsPanel:function(name){
         var self = this;
         this.buttonLayoutNode.active = false;
@@ -86,10 +89,14 @@ var BlackNodeMediator = cc.Class({
         }};
         this.roomNode.getComponent("RoomNodeMediator").setData(params);
     },
+    //关闭房间回调
     roomNodeCloseCB:function(roomName){
         this.buttonLayoutNode.active = true;
-        this.roomNode.active = false;
-        this.mainControll.getSocketServerMediator().exitRoom(roomName);
+        this.roomNode.getComponent("RoomNodeMediator").setRoomNodeActive(false);
+        //如果是房主退出，则解散房间
+        var playerIndex = UserMO.get("playerIndex");
+        if(playerIndex == 0)this.mainControll.getSocketServerMediator().disBandRoom(roomName);
+        else this.mainControll.getSocketServerMediator().exitRoom(roomName);
     },
     joinRoom:function(roomName){
         this.mainControll.getSocketServerMediator().joinRoom(roomName);

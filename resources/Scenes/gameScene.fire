@@ -3304,6 +3304,9 @@
     },
     "userNumsLabel": {
       "__id__": 77
+    },
+    "startBtnNode": {
+      "__id__": 85
     }
   },
   {

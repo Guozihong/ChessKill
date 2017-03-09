@@ -15,23 +15,35 @@ var RoomsListNodeMediator = cc.Class({
         },
     },
     onLoad:function(){
-       
+       this.initEvent();
     },
     initEvent:function(){
         var self = this;
-        // NoticeCenter.addEventListener("roomsListChange",function(event){
-        //     cc.log("roomsListChange");
-        //     self.initRoomsListPanel(event.args);
-        // });
+        NoticeCenter.addEventListener("roomsListChange",function(event){
+            cc.log("roomsListChange");
+            self.freshPanel(event.args);
+        });
     },
-    setData:function(roomsArr,joinRoomCB){
+    setData:function(joinRoomCB){
         var self = this;
-        this.roomsArr = roomsArr;
+        this.isReady = false;
         this.joinRoomCB = joinRoomCB;
         //预加载资源
         Display.preload([["Prefabs/roomsCard",cc.Prefab]],function(isFinished,per){
-            if(isFinished) self.initPanel(roomsArr);
+            if(isFinished) {
+                self.isReady = true;
+            }
         });
+    },
+    freshPanel:function(roomsArr){
+        var self = this;
+        if(!this.isReady) {
+            setTimeout(function(){
+                self.initPanel(roomsArr);
+            },200);
+            return;
+        }
+        this.initPanel(roomsArr);
     },
     initPanel:function(roomsArr){
         //判断是否有房间

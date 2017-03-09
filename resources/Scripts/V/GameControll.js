@@ -39,7 +39,7 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {        
-        this.onePlayerSize = cc.v2(16,4);
+        this.onePlayerSize = cc.v2(16,2);
         this.createPool();
         // this.initPanel();        
         this.initEvent();
@@ -109,6 +109,9 @@ cc.Class({
             this.userChessData.push(chessArr[i].length);
         }
         this.curUserChessNumsLabel.string = chessArr[0].length;
+        //设置根据棋子配置，改变棋盘大小
+        var row = Math.floor(chessArr[0].length / 16 * 2);
+        this.onePlayerSize = cc.v2(16,row);
     },
     //根据玩家人数，获取各自的初始棋子
     getChessConfig:function(){
@@ -193,7 +196,7 @@ cc.Class({
         }
         return size;
     },
-    //获得棋盘的函数，列数
+    //获得棋盘的行数，列数
     getCheckerboardRowAndColumn:function(){
         // var v2;        
         return cc.v2(this.onePlayerSize.x,this.onePlayerSize.y*this.playerNums);
@@ -204,7 +207,7 @@ cc.Class({
         return this.getCheckerboardRowAndColumn().mul(this.spaceSize);
     },
     isCreateNode:function(){
-        //25%的概率
+        //概率
         var n = Math.floor(Math.random() * 2);
         return n == 1;
     },

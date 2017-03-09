@@ -5,17 +5,21 @@ var io = require("socket.io")(http);
 app.use(express.static(__dirname+'/pbulic'));
 
 var clientNums = 0;
+var totolClientNums = 0;
 var groupList = {};
 var userIdList = [];
 
 io.on('connection',function(socket){
 	console.log("a user connected");	
 	clientNums++;
+	totolClientNums++;
 	var date = new Date();
-	var userId = clientNums + date.getTime();
+	//避免userId一样
+	var userId = totolClientNums + date.getTime();
 	userIdList.push(userId);
 	socket.emit("connected",{userId:userId});
 	socket.emit("clientNums",clientNums);
+	console.log("clientNums",totolClientNums);
 	socket.on("login",function(msg){
 		console.log("login");
 		console.log("msg:"+msg);
@@ -28,23 +32,37 @@ io.on('connection',function(socket){
 	//创建分组
 	socket.on("createRoom",function(groupObj){
 		//把创建者本身加入分组
-		socket.join(groupObj.roomName);		
+		joinRoom(socket,groupObj);
+		//用户index发生改变
+		userPlayerIndexChange(socket,groupObj);
 	});	
 	//加入分组
 	socket.on("joinRoom",function(roomData){
 		console.log("userName "+roomData.userName+" join "+roomData.roomName);
-		socket.join(roomData.roomName);
-		io.sockets.in(roomData.roomName).emit('roomsUserChange',io.sockets.adapter.rooms[roomData.roomName]);
-		socket.emit('playerIndex',io.sockets.adapter.rooms[roomData.roomName].length);
+		joinRoom(socket,roomData);
+		//房间人数发生改变
+		roomsUserChange(roomData);
+		//用户index发生改变
+		userPlayerIndexChange(socket,roomData);
 	});
 	//离开分组
 	socket.on("leaveRoom",function(groupObj){
-		console.log("userName "+roomData.userName+" leave "+roomData.roomName);
-		socket.leave(groupObj.roomName);
-		io.sockets.in(groupObj.roomName).emit('roomsUserChange',io.sockets.adapter.rooms[groupObj.roomName]);
+		console.log("userName "+groupObj.userName+" leave "+groupObj.roomName);
+		leaveRoom(socket,groupObj);
+		//房间人数发生改变
+		roomsUserChange(groupObj);
+		//判断房间里面是不是没人了
 		if(!io.sockets.adapter.rooms[groupObj.roomName] || io.sockets.adapter.rooms[groupObj.roomName].length == 0) 
-			socket.broadcast.emit("gameInfomation",{type:0,roomsList:io.sockets.adapter.rooms});
+			gameInfomationChange(socket,0);
 	});
+	
+	//解散分组
+	socket.on("disBandRoom",function(groupObj){
+		console.log("userName "+groupObj.userName+" disBandRoom "+groupObj.roomName);		
+		leaveRoom(socket,groupObj);
+		disBandRoom(socket,groupObj);
+	});
+	
 	//初始化其它玩家棋盘
 	socket.on("freshOtherUserCheckBoard",function(roomData){
 		console.log("freshOtherUserCheckBoard");
@@ -75,11 +93,32 @@ io.on('connection',function(socket){
 	});
 });
 
-io.on('disconnect',function(socket){
-	console.log("断开连接");	
-	clientNums--;
-});
+function userPlayerIndexChange (socket,data){
+	socket.emit('playerIndex',io.sockets.adapter.rooms[data.roomName].length);
+}
 
+function disBandRoom (socket,data){
+	//给分组内除了自己外所有客户端广播信息
+	socket.broadcast.to(data.roomName).emit('disBandRoom');
+}
+
+function joinRoom (socket,data){
+	socket.join(data.roomName);
+}
+
+function leaveRoom (socket,data){
+	socket.leave(data.roomName);
+}
+
+function roomsUserChange (data){
+	//给分组内所有客户端广播信息
+	io.sockets.in(data.roomName).emit('roomsUserChange',io.sockets.adapter.rooms[data.roomName]);
+}
+
+function gameInfomationChange (socket,type){
+	//给除了自己以外的客户端广播信息
+	socket.broadcast.emit("gameInfomation",{type:0,roomsList:io.sockets.adapter.rooms});
+}
 
 http.listen(3000,function(){
 	console.log("listening on:", 3000);

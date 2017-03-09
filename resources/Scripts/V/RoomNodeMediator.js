@@ -1,5 +1,6 @@
 
 var NoticeCenter = require("NoticeCenter");
+var UserMO = require("UserMO");
 
 var RoomNodeMediator = cc.Class({
     extends:cc.Component,
@@ -11,7 +12,11 @@ var RoomNodeMediator = cc.Class({
         userNumsLabel:{
             default:null,
             type: cc.Label
-        }
+        },
+        startBtnNode:{
+            default:null,
+            type: cc.Node
+        },
     },
     onLoad:function(){
         this.initEvent();
@@ -23,6 +28,14 @@ var RoomNodeMediator = cc.Class({
             cc.log("roomsUserChange");
             self.freshPanel(event.args);
         });
+        NoticeCenter.addEventListener("playerIndex",function(event){
+            cc.log("playerIndexChange");
+            self.freshBtnEnabled();
+        });
+        NoticeCenter.addEventListener("disBandRoom",function(event){
+            cc.log("disBandRoom");
+            self.onExitBtn();
+        });
     },
     setData:function(params){
         this.closeCB = params.closeCB;
@@ -33,10 +46,16 @@ var RoomNodeMediator = cc.Class({
         this.userNums = 1;
         this.roomNameLabel.string = params.name;
         this.userNumsLabel.string = "人数: " + 1;
+        this.startBtnNode.active = false;
     },
     freshPanel:function(data){
         this.userNumsLabel.string = "人数: " + data.length;
         this.userNums = data.length;
+    },
+    freshBtnEnabled:function(){
+        //只有房主才能开始游戏
+        var playerIndex = UserMO.get("playerIndex");
+        if(playerIndex == 0) this.startBtnNode.active = true;
     },
     onExitBtn:function(event){
         this.closeCB(this.roomNameLabel.string);
