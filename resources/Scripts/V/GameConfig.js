@@ -19,13 +19,6 @@ GameConfig.OnePlayerConfig = [
     ChessConfig.Knights,ChessConfig.Knights,//马两个
     ChessConfig.Cannons,ChessConfig.Cannons,//炮两个
     ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,//兵两个
-
-    ChessConfig.Mandarins,ChessConfig.Mandarins,//士两个
-    ChessConfig.Elephants,ChessConfig.Elephants,//象两个
-    ChessConfig.Rooks,ChessConfig.Rooks,//车两个
-    ChessConfig.Knights,ChessConfig.Knights,//马两个
-    ChessConfig.Cannons,ChessConfig.Cannons,//炮两个
-    ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,//兵两个
 ];
 
 GameConfig.PlayerColorConfig = [
@@ -33,5 +26,8 @@ GameConfig.PlayerColorConfig = [
     new cc.hexToColor("#F1D644"),//YELLOW
     new cc.hexToColor("#F144EA"),//PURPLE
     new cc.hexToColor("#D62F2F"),//RED
+    new cc.hexToColor("#303FE9"),//deepBlue
+    new cc.hexToColor("#30DAE9"),//skyBlue
+    new cc.hexToColor("#F197BB"),//pink
 ];
 module.exports = GameConfig;

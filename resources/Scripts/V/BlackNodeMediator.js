@@ -2,6 +2,8 @@
 var NoticeCenter = require("NoticeCenter");
 var Display = require("Display");
 var UserMO = require("UserMO");
+var utils = require("utils");
+var PlayerColorConfig = require("GameConfig").PlayerColorConfig;
 
 var BlackNodeMediator = cc.Class({
     extends:cc.Component,
@@ -71,7 +73,8 @@ var BlackNodeMediator = cc.Class({
         inputNameNode.getComponent("InputNameMediator").setData(function(name){
             if(name == "") return Display.tip("房名不能为空!");
             inputNameNode.getComponent("InputNameMediator").close();
-            self.mainControll.getSocketServerMediator().createRoom(name);
+            var nums = utils.size(PlayerColorConfig)
+            self.mainControll.getSocketServerMediator().createRoom(name,nums);
             self.initRoomsPanel(name);
         });
         this.node.addChild(inputNameNode);
@@ -99,8 +102,15 @@ var BlackNodeMediator = cc.Class({
         else this.mainControll.getSocketServerMediator().exitRoom(roomName);
     },
     joinRoom:function(roomName){
-        this.mainControll.getSocketServerMediator().joinRoom(roomName);
-        this.initRoomsPanel(roomName);
+        var self = this;
+        this.mainControll.getSocketServerMediator().joinRoom(roomName,function(result){
+            if(result.res) {
+                self.roomListNode.getComponent("RoomsListNodeMediator").onExitBtn();
+                self.initRoomsPanel(roomName);
+            }
+            else Display.tip(result.msg);
+        });
+        
     }
 });
 module.exports = BlackNodeMediator;

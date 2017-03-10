@@ -114,14 +114,17 @@ var ScoketServer = cc.Class({
     clientNums:function(){
         return this.clientNums;
     },
-    createRoom:function(roomName){
-        this.socket.emit("createRoom",{roomName:roomName});
+    createRoom:function(roomName,nums){
+        this.socket.emit("createRoom",{roomName:roomName,nums:nums});
         this.roomName = roomName;
     },   
-    joinRoom:function(roomName){
+    joinRoom:function(roomName,cb){
         var userName = UserMO.get("userName");
         this.socket.emit("joinRoom",{userName:userName,roomName:roomName});
         this.roomName = roomName;
+        this.socket.on("joinRoomCallBack",function(result){
+            cb(result);
+        });
     },   
     exitRoom:function(roomName){
         var userName = UserMO.get("userName");

@@ -82,7 +82,6 @@ var RoomsListNodeMediator = cc.Class({
         var target = event.currentTarget;
         var roomName = target.getChildByName("label").getComponent(cc.Label).string;
         this.joinRoomCB(roomName);
-        this.onExitBtn();
     }
 });
 module.exports = RoomsListNodeMediator;

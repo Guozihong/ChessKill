@@ -8,6 +8,7 @@ var clientNums = 0;
 var totolClientNums = 0;
 var groupList = {};
 var userIdList = [];
+var roomsList = {};
 
 io.on('connection',function(socket){
 	console.log("a user connected");	
@@ -32,18 +33,22 @@ io.on('connection',function(socket){
 	//创建分组
 	socket.on("createRoom",function(groupObj){
 		//把创建者本身加入分组
-		joinRoom(socket,groupObj);
+		socket.join(groupObj.roomName);
 		//用户index发生改变
 		userPlayerIndexChange(socket,groupObj);
+		//保存房间大小
+		roomsList[groupObj.roomName] = groupObj.nums;
 	});	
 	//加入分组
 	socket.on("joinRoom",function(roomData){
 		console.log("userName "+roomData.userName+" join "+roomData.roomName);
-		joinRoom(socket,roomData);
-		//房间人数发生改变
-		roomsUserChange(roomData);
-		//用户index发生改变
-		userPlayerIndexChange(socket,roomData);
+		var res = joinRoom(socket,roomData);
+		if(res){
+			//房间人数发生改变
+			roomsUserChange(roomData);
+			//用户index发生改变
+			userPlayerIndexChange(socket,roomData);
+		}
 	});
 	//离开分组
 	socket.on("leaveRoom",function(groupObj){
@@ -103,7 +108,19 @@ function disBandRoom (socket,data){
 }
 
 function joinRoom (socket,data){
+	var curSize = getRoomSizeByName(data.roomName);
+	if(!curSize) {
+		socket.emit("joinRoomCallBack",{res:false,msg:"房间不存在，无法加入！"});
+		return false;
+	}
+	console.log(curSize +" "+roomsList[data.roomName]);
+	if(curSize >= roomsList[data.roomName]) {
+		socket.emit("joinRoomCallBack",{res:false,msg:"房间已满，无法加入！"});
+		return false;
+	}
 	socket.join(data.roomName);
+	socket.emit("joinRoomCallBack",{res:true,msg:"加入成功！"});
+	return true;
 }
 
 function leaveRoom (socket,data){
@@ -118,6 +135,11 @@ function roomsUserChange (data){
 function gameInfomationChange (socket,type){
 	//给除了自己以外的客户端广播信息
 	socket.broadcast.emit("gameInfomation",{type:0,roomsList:io.sockets.adapter.rooms});
+}
+//获取房间当前有多少玩家
+function getRoomSizeByName (roomName){	
+	if(!io.sockets.adapter.rooms[roomName]) return false;
+	return io.sockets.adapter.rooms[roomName].length;
 }
 
 http.listen(3000,function(){
