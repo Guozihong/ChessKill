@@ -14,6 +14,10 @@ cc.Class({
         blackNode:{
             default:null,
             type: cc.Node
+        },
+        chessBoardMaskNode:{
+            default:null,
+            type: cc.Node
         }
     },
 
@@ -84,10 +88,10 @@ cc.Class({
         }
     },
     isNeedMoveX:function(){
-        return cc.winSize.width < this.gameNode.width; 
+        return this.chessBoardMaskNode.width < this.gameNode.width; 
     },
     isNeedMoveY:function(){
-        return cc.winSize.height < this.gameNode.height; 
+        return this.chessBoardMaskNode.height < this.gameNode.height; 
     },
     getBlackNodeMediator:function(){
         return this.blackNodeMediator;
@@ -99,17 +103,17 @@ cc.Class({
         return this.gameControll;
     },
     initPanel:function(){
-        this.setBlackNodeActive(true);
         this.connecServer();
     },
     freshPanel:function(){
         //初始化面板，是否连上服务器
+        this.setBlackNodeActive(true);        
         if(this.socketServerMediator.connectStatus()) this.blackNodeMediator.initConnectServerPanel();
         else this.blackNodeMediator.initDisConnectServerPanel();
     },
     doConnected:function(){
         if(this.userName == "") this.addInputUserNamePanel();
-        this.freshPanel();
+        else this.freshPanel();
     },
     //添加输入名字节点
     addInputUserNamePanel:function(){
@@ -122,7 +126,7 @@ cc.Class({
             self.setUserName(name);
             self.freshPanel();
         });
-        this.node.parent.addChild(inputNameNode);
+        cc.director.getScene().addChild(inputNameNode);
     },
     connecServer:function(){
         this.socketServerMediator.openClient();
