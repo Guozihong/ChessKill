@@ -404,8 +404,9 @@ cc.Class({
         }while(this.userChessData[this.nextPlayerIndex] <= 0)
         this.setOtherPlayerColor();
     },
+    //随机选一个主公出来
     randomRole:function(){
-        var n = Math.random() * this.playerNums;
+        var n = Math.floor(Math.random() * this.playerNums);
         return n;
     }
     
