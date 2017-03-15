@@ -82,8 +82,11 @@ cc.Class({
         this.setUserChessNums(chessArr);
         this.initPanel();
         this.createCheckerboard(chessArr);
+        //随机获得分配角色
+        var mainRole = this.randomRole();
+        this.changeOrder(mainRole);
         //通知其它玩家刷新棋盘
-        this.mainControll.getSocketServerMediator().freshOtherUserCheckBoard(JSON.stringify(this.chessBoardData),this.playerNums);
+        this.mainControll.getSocketServerMediator().freshOtherUserCheckBoard(JSON.stringify(this.chessBoardData),this.playerNums,mainRole);
     },
     initPanel:function(){
         //设置面板大小
@@ -93,7 +96,6 @@ cc.Class({
         //设置颜色栏
         this.userColorNode.active = true;
         this.userColorNode.getChildByName("userColor").color = PlayerColorConfig[this.playerIndex];
-        this.setOtherPlayerColor();
     },
     freshPanel:function(params){
         //设置基础数据
@@ -104,6 +106,8 @@ cc.Class({
         //setUserChessNums 放在initPanel前
         this.setUserChessNums(chessArr);
         this.initPanel();
+        //改变开始人为主公下标
+        this.changeOrder(params.mainRole);
         this.showCheckBoard(JSON.parse(params.checkBoardArr));
     },
     //设置玩家所剩棋子数
@@ -375,14 +379,8 @@ cc.Class({
         return chessNode.getComponent("ChessmanMediator");
     },
     nextPlayer:function(){
-        this.stepNums++;
-        // var otherPlayerIndex = this.stepNums % this.playerNums;
-        //计算下一个玩家是谁，如果该玩家没棋了，则跳过
-        do{
-            this.nextPlayerIndex++;
-            this.nextPlayerIndex = this.nextPlayerIndex % this.playerNums;
-        }while(this.userChessData[this.nextPlayerIndex] <= 0)
-        this.setOtherPlayerColor();
+       this.stepNums++;
+       this.caculateNextPlayerIndex();
     },
     //设置玩家对应颜色
     setOtherPlayerColor:function(){
@@ -391,5 +389,24 @@ cc.Class({
     },
     isMyOrder:function(){
         return (this.nextPlayerIndex) == this.playerIndex ? true : false;
+    },
+    //改变谁走第一步次序
+    changeOrder:function(num){
+        this.nextPlayerIndex+=num;
+        this.nextPlayerIndex--;
+        this.caculateNextPlayerIndex();
+    },
+    caculateNextPlayerIndex:function(){
+         //计算下一个玩家是谁，如果该玩家没棋了，则跳过
+        do{
+            this.nextPlayerIndex ++;
+            this.nextPlayerIndex = Math.floor(this.nextPlayerIndex % this.playerNums);
+        }while(this.userChessData[this.nextPlayerIndex] <= 0)
+        this.setOtherPlayerColor();
+    },
+    randomRole:function(){
+        var n = Math.random() * this.playerNums;
+        return n;
     }
+    
 });

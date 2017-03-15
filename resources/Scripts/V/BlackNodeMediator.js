@@ -70,26 +70,36 @@ var BlackNodeMediator = cc.Class({
         var inputNameNodePrefab = Display.getPrefab("InputNameNode");
         var inputNameNode = cc.instantiate(inputNameNodePrefab);
         //输完后回调
-        inputNameNode.getComponent("InputNameMediator").setData(function(name){
+        inputNameNode.getComponent("InputNameMediator").setData(function(name,isCancel){
+            if(isCancel) return;
             if(name == "") return Display.tip("房名不能为空!");
             inputNameNode.getComponent("InputNameMediator").close();
             var nums = utils.size(PlayerColorConfig)
-            self.mainControll.getSocketServerMediator().createRoom(name,nums);
-            self.initRoomsPanel(name);
+            //连接服务器，创建房间
+            self.mainControll.getSocketServerMediator().createRoom(name,nums,function(result){
+                //刚创建只有一个人
+                if(result.res) self.initRoomsPanel(name,1);
+                else Display.tip(result.msg);
+            });
         });
         this.node.addChild(inputNameNode);
     },
     //设置房间数据
-    initRoomsPanel:function(name){
+    initRoomsPanel:function(name,userNums){
         var self = this;
         this.buttonLayoutNode.active = false;
         this.roomNode.active = true;
-        var params = {name:name,closeCB:function(roomName){
-            self.roomNodeCloseCB(roomName);
-        },startGameCB:function(userNums){
-            self.mainControll.getSocketServerMediator().setPanel(0);
-            self.mainControll.getGameControllMediator().setData({playerNums:userNums,mainControll:self.mainControll});
-        }};
+        var params = {name:name,
+            //退出房间回调
+            closeCB:function(roomName){
+                self.roomNodeCloseCB(roomName);
+            },
+            //开始游戏回调
+            startGameCB:function(userNums){
+                self.mainControll.getSocketServerMediator().setPanel(0);
+                self.mainControll.getGameControllMediator().setData({playerNums:userNums,mainControll:self.mainControll});
+            },
+            userNums:userNums};
         this.roomNode.getComponent("RoomNodeMediator").setData(params);
     },
     //关闭房间回调
@@ -106,7 +116,7 @@ var BlackNodeMediator = cc.Class({
         this.mainControll.getSocketServerMediator().joinRoom(roomName,function(result){
             if(result.res) {
                 self.roomListNode.getComponent("RoomsListNodeMediator").onExitBtn();
-                self.initRoomsPanel(roomName);
+                self.initRoomsPanel(roomName,result.userNums);
             }
             else Display.tip(result.msg);
         });

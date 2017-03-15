@@ -114,15 +114,22 @@ var ScoketServer = cc.Class({
     clientNums:function(){
         return this.clientNums;
     },
-    createRoom:function(roomName,nums){
+    createRoom:function(roomName,nums,cb){
         this.socket.emit("createRoom",{roomName:roomName,nums:nums});
         this.roomName = roomName;
+        var self = this;
+        this.socket.on("createRoomCB",function(result){
+            self.dispatchEvent(result.data);
+            cb(result);
+        });
     },   
     joinRoom:function(roomName,cb){
         var userName = UserMO.get("userName");
         this.socket.emit("joinRoom",{userName:userName,roomName:roomName});
         this.roomName = roomName;
+        var self = this;
         this.socket.on("joinRoomCallBack",function(result){
+            self.dispatchEvent(result.data);
             cb(result);
         });
     },   
@@ -131,8 +138,8 @@ var ScoketServer = cc.Class({
         this.socket.emit("leaveRoom",{userName:userName,roomName:roomName});
         this.roomName = "";
     },   
-    freshOtherUserCheckBoard:function(checkBoardArr,playerNums){
-        this.socket.emit("freshOtherUserCheckBoard",{roomName:this.roomName,checkBoardArr:checkBoardArr,playerNums:playerNums});
+    freshOtherUserCheckBoard:function(checkBoardArr,playerNums,mainRole){
+        this.socket.emit("freshOtherUserCheckBoard",{roomName:this.roomName,checkBoardArr:checkBoardArr,playerNums:playerNums,mainRole:mainRole});
     },
     selectOneChess:function(chessNodeData){
         var playerIndex = UserMO.get("playerIndex");
@@ -146,5 +153,11 @@ var ScoketServer = cc.Class({
         var userName = UserMO.get("userName");
         this.socket.emit("disBandRoom",{roomName:this.roomName,userName:userName});
     },
+    dispatchEvent:function(eventList){
+        if(!eventList) return;
+        for(let i in eventList){
+            NoticeCenter.dispatchEvent(i,eventList[i]);
+        }
+    }
 });
 module.exports = ScoketServer;

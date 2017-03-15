@@ -28,10 +28,6 @@ var RoomNodeMediator = cc.Class({
             cc.log("roomsUserChange");
             self.freshPanel(event.args);
         });
-        NoticeCenter.addEventListener("playerIndex",function(event){
-            cc.log("playerIndexChange");
-            self.freshBtnEnabled();
-        });
         NoticeCenter.addEventListener("disBandRoom",function(event){
             cc.log("disBandRoom");
             self.onExitBtn();
@@ -45,17 +41,17 @@ var RoomNodeMediator = cc.Class({
     initPanel:function(params){
         this.userNums = 1;
         this.roomNameLabel.string = params.name;
-        this.userNumsLabel.string = "人数: " + 1;
-        this.startBtnNode.active = false;
+        this.userNumsLabel.string = "人数: " + params.userNums;
+        //判断是不是房主
+        var playerIndex = UserMO.get("playerIndex");
+        if(playerIndex == 0) 
+            this.startBtnNode.active = true;
+        else 
+            this.startBtnNode.active = false;
     },
     freshPanel:function(data){
         this.userNumsLabel.string = "人数: " + data.length;
         this.userNums = data.length;
-    },
-    freshBtnEnabled:function(){
-        //只有房主才能开始游戏
-        var playerIndex = UserMO.get("playerIndex");
-        if(playerIndex == 0) this.startBtnNode.active = true;
     },
     onExitBtn:function(event){
         this.closeCB(this.roomNameLabel.string);

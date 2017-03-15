@@ -14,10 +14,10 @@ var InputNameMediator = cc.Class({
     },
     onCreateUserBtn:function(event){
         this.cb(this.inputUserNameEditbox.string);
-        this.close();
     },
     onExitBtn:function(event){
-        this.cb(this.inputUserNameEditbox.string);
+        this.cb(this.inputUserNameEditbox.string,true);
+        this.close();
     },
     close:function(){
         this.node.destroy();
