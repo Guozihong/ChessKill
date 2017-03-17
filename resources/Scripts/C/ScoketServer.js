@@ -153,6 +153,7 @@ var ScoketServer = cc.Class({
         var userName = UserMO.get("userName");
         this.socket.emit("disBandRoom",{roomName:this.roomName,userName:userName});
     },
+    //事件派发
     dispatchEvent:function(eventList){
         if(!eventList) return;
         for(let i in eventList){
