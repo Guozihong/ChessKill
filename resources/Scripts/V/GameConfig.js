@@ -9,6 +9,13 @@ GameConfig.ChessConfig = {
     Pawns:7,//卒
 };
 
+GameConfig.RoleConfig = {
+    Master:1,//主公
+    Rebel:2,//反贼
+    Mole:3,//内奸
+    Loyal :4,//忠臣
+};
+
 var ChessConfig = GameConfig.ChessConfig;
 //一个玩家有的棋子
 GameConfig.OnePlayerConfig = [
@@ -20,7 +27,7 @@ GameConfig.OnePlayerConfig = [
     ChessConfig.Cannons,ChessConfig.Cannons,//炮两个
     ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,ChessConfig.Pawns,//兵两个
 ];
-
+//颜色配置，也是房间人数配置
 GameConfig.PlayerColorConfig = [
     new cc.hexToColor("#44F174"),//GREEN
     new cc.hexToColor("#F1D644"),//YELLOW
@@ -29,5 +36,15 @@ GameConfig.PlayerColorConfig = [
     new cc.hexToColor("#303FE9"),//deepBlue
     new cc.hexToColor("#30DAE9"),//skyBlue
     new cc.hexToColor("#F197BB"),//pink
+];
+//角色配置
+var RoleConfig = GameConfig.RoleConfig;
+GameConfig.PlayerRoleConfig = [
+    [RoleConfig.Master,RoleConfig.Rebel],//两个人
+    [RoleConfig.Master,RoleConfig.Rebel,RoleConfig.Mole],//三个人
+    [RoleConfig.Master,RoleConfig.Rebel,RoleConfig.Rebel,RoleConfig.Mole],//四个人
+    [RoleConfig.Master,RoleConfig.Rebel,RoleConfig.Rebel,RoleConfig.Mole,RoleConfig.Loyal],//五个人
+    [RoleConfig.Master,RoleConfig.Rebel,RoleConfig.Rebel,RoleConfig.Mole,RoleConfig.Loyal,RoleConfig.Loyal],//六个人
+    [RoleConfig.Master,RoleConfig.Rebel,RoleConfig.Rebel,RoleConfig.Rebel,RoleConfig.Mole,RoleConfig.Loyal,RoleConfig.Loyal],//七个人
 ];
 module.exports = GameConfig;

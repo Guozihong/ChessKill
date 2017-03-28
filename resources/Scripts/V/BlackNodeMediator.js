@@ -78,6 +78,7 @@ var BlackNodeMediator = cc.Class({
             //连接服务器，创建房间
             self.mainControll.getSocketServerMediator().createRoom(name,nums,function(result){
                 //刚创建只有一个人
+                cc.log("result:",result,result.res);
                 if(result.res) self.initRoomsPanel(name,1);
                 else Display.tip(result.msg);
             });

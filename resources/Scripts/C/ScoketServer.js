@@ -10,9 +10,9 @@ var ScoketServer = cc.Class({
     },
     onLoad:function(){
         if(cc.sys.isNative){
-            window.io = SocketIO;
+            // window.io = SocketIO;
         }else{
-            require("socket.io");
+            window.io = require("socket.io");
         }
         this.connectServer = false;
         this.clientNums = 0;
@@ -23,10 +23,19 @@ var ScoketServer = cc.Class({
     openClient:function(){
         var self = this;
         var socket = null;
-        this.socket = socket = io("http://localhost:3000");
+        if(!cc.sys.isNative){
+            this.socket = socket = io("http://192.168.100.9:3000");
+        }
+        else{
+            this.socket = socket = SocketIO.connect("http://192.168.100.9:3000");
+        }
         //连接成功
         socket.on("connected",function(userData){
             self.connectServer = true;
+            //解决web端跟native端不一致问题
+            try {
+                userData = JSON.parse(userData);                
+            } catch (error) {}
             // socket.emit("group1");
             self.userId = userData.userId;
             NoticeCenter.dispatchEvent("connected",userData);
@@ -38,17 +47,29 @@ var ScoketServer = cc.Class({
         });
         //房间用户变化
         socket.on("roomsUserChange",function(roomData){
+            //解决web端跟native端不一致问题
+            try {
+                roomData = JSON.parse(roomData);                
+            } catch (error) {}
             cc.log("roomData:",roomData);
             NoticeCenter.dispatchEvent("roomsUserChange",roomData);
         });
         //选择的棋子
         socket.on("selectOneChess",function(chessData){
+            //解决web端跟native端不一致问题
+            try {
+                chessData = JSON.parse(chessData);                
+            } catch (error) {}
             cc.log("selectOneChess:",chessData);
             if(chessData.userId == self.userId) return;
             NoticeCenter.dispatchEvent("selectOneChess",chessData);
         });
         //棋盘数据
         socket.on("freshOtherUserCheckBoard",function(chessBoardData){
+            //解决web端跟native端不一致问题
+            try {
+                chessBoardData = JSON.parse(chessBoardData);                
+            } catch (error) {}
             cc.log("freshOtherUserCheckBoard:",chessBoardData);
             NoticeCenter.dispatchEvent("showCheckBoard",chessBoardData);
         });
@@ -64,6 +85,10 @@ var ScoketServer = cc.Class({
         });
         //设置面板
         socket.on("setPanel",function(setData){
+             //解决web端跟native端不一致问题
+            try {
+                setData = JSON.parse(setData);                
+            } catch (error) {}
             cc.log("setPanel:",setData);
             switch(parseInt(setData.type)){
                 //隐藏blackNode
@@ -79,6 +104,10 @@ var ScoketServer = cc.Class({
         });
         //房间信息
         socket.on('gameInfomation',function(msg){
+             //解决web端跟native端不一致问题
+            try {
+                msg = JSON.parse(msg);                
+            } catch (error) {}
             cc.log("gameInfomation type:",msg.type);	
             switch(parseInt(msg.type)){
                 //房间列表
@@ -119,6 +148,10 @@ var ScoketServer = cc.Class({
         this.roomName = roomName;
         var self = this;
         this.socket.on("createRoomCB",function(result){
+             //解决web端跟native端不一致问题
+            try {
+                result = JSON.parse(result);                
+            } catch (error) {}
             self.dispatchEvent(result.data);
             cb(result);
         });
@@ -129,6 +162,10 @@ var ScoketServer = cc.Class({
         this.roomName = roomName;
         var self = this;
         this.socket.on("joinRoomCallBack",function(result){
+             //解决web端跟native端不一致问题
+            try {
+                result = JSON.parse(result);                
+            } catch (error) {}
             self.dispatchEvent(result.data);
             cb(result);
         });
@@ -138,8 +175,8 @@ var ScoketServer = cc.Class({
         this.socket.emit("leaveRoom",{userName:userName,roomName:roomName});
         this.roomName = "";
     },   
-    freshOtherUserCheckBoard:function(checkBoardArr,playerNums,mainRole){
-        this.socket.emit("freshOtherUserCheckBoard",{roomName:this.roomName,checkBoardArr:checkBoardArr,playerNums:playerNums,mainRole:mainRole});
+    freshOtherUserCheckBoard:function(checkBoardArr,playerNums,roleList){
+        this.socket.emit("freshOtherUserCheckBoard",{roomName:this.roomName,checkBoardArr:checkBoardArr,playerNums:playerNums,roleList:roleList});
     },
     selectOneChess:function(chessNodeData){
         var playerIndex = UserMO.get("playerIndex");

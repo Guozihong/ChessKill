@@ -31,6 +31,7 @@ cc.Class({
         this.chessData = params.chessData;
         this.gameControll = params.pointer;
         this.empty = params.empty;  
+        
     },
     //获取棋子位置
     getNodePos:function(){

@@ -1,5 +1,6 @@
 var OnePlayerConfig = require("GameConfig").OnePlayerConfig;
 var PlayerColorConfig = require("GameConfig").PlayerColorConfig;
+var RoleConfig = require("GameConfig").RoleConfig;
 var NoticeCenter = require("NoticeCenter");
 var UserMO = require("UserMO");
 
@@ -27,11 +28,27 @@ cc.Class({
             default:null,
             type:cc.Node
         },
+        tipNode:{
+            default:null,
+            type:cc.Node
+        },
         userColorNode:{
             default:null,
             type:cc.Node
         },
+        otherColorNode:{
+            default:null,
+            type:cc.Node
+        },
+        masterColorNode:{
+            default:null,
+            type:cc.Node
+        },
         curUserChessNumsLabel:{
+            default:null,
+            type:cc.Label
+        },
+        userRoleLabel:{
             default:null,
             type:cc.Label
         }
@@ -46,8 +63,6 @@ cc.Class({
         this.clearData();
         this.stepNums = 0;
         this.nextPlayerIndex = 0;
-
-        this.curUserColorNode = this.userColorNode.getChildByName("curUserColor");
     },
     clearData:function(){
         //棋盘所有棋子，包括棋盘格子
@@ -83,10 +98,13 @@ cc.Class({
         this.initPanel();
         this.createCheckerboard(chessArr);
         //随机获得分配角色
-        var mainRole = this.randomRole();
-        this.changeOrder(mainRole);
+        var roleList = this.randomRole();
+        this.setOrderByRoleList(roleList);
+        this.setMasterNodeColor(roleList);
+        this.setUserRoleLabel(roleList);
         //通知其它玩家刷新棋盘
-        this.mainControll.getSocketServerMediator().freshOtherUserCheckBoard(JSON.stringify(this.chessBoardData),this.playerNums,mainRole);
+        this.mainControll.getSocketServerMediator().freshOtherUserCheckBoard(JSON.stringify(this.chessBoardData),this.playerNums,roleList);
+        cc.log("this.chessBoardData",this.chessBoardData);
     },
     initPanel:function(){
         //设置面板大小
@@ -94,8 +112,8 @@ cc.Class({
         this.node.width = size.x;
         this.node.height = size.y;
         //设置颜色栏
-        this.userColorNode.active = true;
-        this.userColorNode.getChildByName("userColor").color = PlayerColorConfig[this.playerIndex];
+        this.tipNode.active = true;
+        this.userColorNode.color = PlayerColorConfig[this.playerIndex];
     },
     freshPanel:function(params){
         //设置基础数据
@@ -107,7 +125,9 @@ cc.Class({
         this.setUserChessNums(chessArr);
         this.initPanel();
         //改变开始人为主公下标
-        this.changeOrder(params.mainRole);
+        this.setOrderByRoleList(params.roleList);
+        this.setUserRoleLabel(params.roleList);
+        this.setMasterNodeColor(params.roleList);
         this.showCheckBoard(JSON.parse(params.checkBoardArr));
     },
     //设置玩家所剩棋子数
@@ -130,14 +150,17 @@ cc.Class({
     },
     //创建棋子
     createCheckerboard:function(chessArr){
+        //根据玩家人数，获取棋盘大小
         var rowAndColumn = this.getCheckerboardRowAndColumn();
         var empty = false,chessData = false,tempArr = [],chessDataTemp = [];
+        //根据棋盘大小，创建棋子
         for(let row = 0;row < rowAndColumn.y;row++){
             tempArr = [],chessDataTemp = [];
             for(let column = 0;column < rowAndColumn.x;column++){
                 empty = false;
+                //获取玩家剩余棋子数
                 var residueNums = this.getResidueNums(chessArr);
-                //所有玩家都没有棋子，返回
+                //所有玩家都没有棋子则生成普通棋盘
                 if(0 == residueNums) empty = true;
                 //计算棋盘还剩几个格子(剩余的格子数大于剩余棋子数时，随机是否填入棋子)
                 var residueChessNums = ((rowAndColumn.y - row - 1) * rowAndColumn.x) + rowAndColumn.x - column;
@@ -149,7 +172,9 @@ cc.Class({
                     }
                 }
                 //获取棋子属于哪一个玩家的哪个棋子的数据
-                if(!empty) chessData = this.getOneChessData(chessArr);                
+                if(!empty) chessData = this.getOneChessData(chessArr);  
+                else chessData = false;
+
                 var chessNode = this.getNode();
                 //要先设置数据，才能获取位置
                 var params = {row:row,column:column,size:this.spaceSize,chessData:chessData,pointer:this,empty:empty};
@@ -166,6 +191,7 @@ cc.Class({
     //根据棋盘数据显示棋子
     showCheckBoard:function(chessArr){
         var empty = false,tempArr = [];
+        cc.log("chessArr row colunm",chessArr);
         for(let row in chessArr){
             tempArr = []
             for(let column in chessArr[row]){
@@ -298,6 +324,7 @@ cc.Class({
             cc.v2(curChessNodeScript.column,curChessNodeScript.row));
         //跑跳吃不管大小
         if(nums == 1 && lastSelectChessNodeScript.moveDis == -2) return true;
+        //中间有其他棋子阻挡着，不能吃
         if(nums > 0) return false;
         //判断大小
         var lastSelectChessTag = lastSelectChessNodeScript.getChessTag();
@@ -384,11 +411,34 @@ cc.Class({
     },
     //设置玩家对应颜色
     setOtherPlayerColor:function(){
-        this.curUserColorNode.color = PlayerColorConfig[this.nextPlayerIndex];        
-        this.curUserColorNode.getChildByName("label").getComponent(cc.Label).string = this.nextPlayerIndex;        
+        this.otherColorNode.color = PlayerColorConfig[this.nextPlayerIndex];        
+        this.otherColorNode.getChildByName("label").getComponent(cc.Label).string = this.nextPlayerIndex;        
     },
     isMyOrder:function(){
         return (this.nextPlayerIndex) == this.playerIndex ? true : false;
+    },
+    setOrderByRoleList:function(roleList){
+        //遍历获取主公下标
+        var mainRole = 0;
+        for(let i in roleList){
+            if(roleList[i] == RoleConfig.Master){
+                mainRole = i;
+                break;
+            }
+        }
+        this.changeOrder(mainRole);
+    },
+    //设置主公颜色
+    setMasterNodeColor:function(roleList){
+        var mainRole = 0;
+        for(let i in roleList){
+            if(roleList[i] == RoleConfig.Master){
+                mainRole = i;
+                break;
+            }
+        }
+        this.masterColorNode.color = PlayerColorConfig[mainRole];
+        this.masterColorNode.getChildByName("label").getComponent(cc.Label).string = mainRole;
     },
     //改变谁走第一步次序
     changeOrder:function(num){
@@ -404,10 +454,22 @@ cc.Class({
         }while(this.userChessData[this.nextPlayerIndex] <= 0)
         this.setOtherPlayerColor();
     },
-    //随机选一个主公出来
+    //随机玩家角色
     randomRole:function(){
-        var n = Math.floor(Math.random() * this.playerNums);
-        return n;
+        var PlayerRoleConfig = require("GameConfig").PlayerRoleConfig[this.playerNums - 2];
+        var roleList = {};
+        var index = 0;
+        while(PlayerRoleConfig.length > 0){
+            var n = Math.floor(Math.random() * PlayerRoleConfig.length);
+            roleList[index++] = PlayerRoleConfig[n];
+            PlayerRoleConfig.splice(n,1);
+        }
+        return roleList;
+    },
+    setUserRoleLabel:function(roleList){
+        if(roleList[this.playerIndex] == RoleConfig.Master) this.userRoleLabel.string = "主公";
+        else if(roleList[this.playerIndex] == RoleConfig.Rebel) this.userRoleLabel.string = "反贼";
+        else if(roleList[this.playerIndex] == RoleConfig.Mole) this.userRoleLabel.string = "内奸";
+        else if(roleList[this.playerIndex] == RoleConfig.Loyal) this.userRoleLabel.string = "忠臣";
     }
-    
 });
