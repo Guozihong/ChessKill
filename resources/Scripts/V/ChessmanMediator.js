@@ -60,7 +60,7 @@ cc.Class({
             }
             case ChessConfig.Elephants:{
                 str = "象";
-                this.moveDis = 4;
+                this.moveDis = 3;
                 break;
             }
             case ChessConfig.Rooks:{
@@ -70,7 +70,7 @@ cc.Class({
             }
             case ChessConfig.Knights:{
                 str = "马";
-                this.moveDis = 3;
+                this.moveDis = 4;
                 break;
             }
             case ChessConfig.Cannons:{
