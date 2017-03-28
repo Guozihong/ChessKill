@@ -216,10 +216,7 @@ var Display = cc.Class({
             var viewNode = cc.instantiate(prefab);
             var label = viewNode.getComponentInChildren(cc.Label)
             label.string = message
-            // require('GM').getRunningSceneMediator().node.addChild(viewNode, 30)
             cc.director.getScene().addChild(viewNode,30);
-            // self.node.addChild(viewNode)
-            // self.pushView(viewNode);
         })
     },
     loadPerfab : function(perfabName, cb){

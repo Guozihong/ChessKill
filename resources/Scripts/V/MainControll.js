@@ -64,6 +64,7 @@ cc.Class({
             onTouchBegan: function (keyCode, event) {
                 return true;
             },
+            //移动事件
             onTouchMoved: function (keyCode, event) {
                 if(self.isNeedMoveX()) {
                     self.gameNode.x -= (keyCode._prevPoint.x - keyCode._point.x);
@@ -78,6 +79,14 @@ cc.Class({
         });
         cc.eventManager.addListener(listener,this.node);
     },
+    //判断宽度是否超出
+    isNeedMoveX:function(){
+        return this.chessBoardMaskNode.width < this.gameNode.width; 
+    },
+    //判断高度是否超出
+    isNeedMoveY:function(){
+        return this.chessBoardMaskNode.height < this.gameNode.height; 
+    },
     onTouchMove:function(event){
         cc.log("touchmove");
         if(this.isNeedMoveX()) {
@@ -86,12 +95,6 @@ cc.Class({
         if(this.isNeedMoveY()) {
             this.gameNode.y += event.getDelta().y;
         }
-    },
-    isNeedMoveX:function(){
-        return this.chessBoardMaskNode.width < this.gameNode.width; 
-    },
-    isNeedMoveY:function(){
-        return this.chessBoardMaskNode.height < this.gameNode.height; 
     },
     getBlackNodeMediator:function(){
         return this.blackNodeMediator;

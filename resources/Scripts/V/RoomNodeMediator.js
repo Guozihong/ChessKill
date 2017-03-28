@@ -1,6 +1,7 @@
 
 var NoticeCenter = require("NoticeCenter");
 var UserMO = require("UserMO");
+var Display = require("Display");
 
 var RoomNodeMediator = cc.Class({
     extends:cc.Component,
@@ -57,6 +58,10 @@ var RoomNodeMediator = cc.Class({
         this.closeCB(this.roomNameLabel.string);
     },
     onStartGameBtn:function(event){
+        if(this.userNums < 2) {
+            Display.tip("至少两个人才能开始游戏！");
+            return;
+        }
         this.startGameCB(this.userNums);
     },
     setRoomNodeActive:function(enable){
