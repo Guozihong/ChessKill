@@ -363,8 +363,9 @@ cc.Class({
         var temp = this.chessBoardArr[curChessNodeScript.row][curChessNodeScript.column];
         this.chessBoardArr[curChessNodeScript.row][curChessNodeScript.column] = this.chessBoardArr[lastSelectChessNodeScript.row][lastSelectChessNodeScript.column];
         this.chessBoardArr[lastSelectChessNodeScript.row][lastSelectChessNodeScript.column] = temp;
-        //交换节点数据
+        //调用棋子本身吃掉棋子事件
         curChessNodeScript.eatNode();
+        //交换节点数据
         var tempPos = chessNode.position;
         var tempColumn = curChessNodeScript.column;
         var tempRow = curChessNodeScript.row;

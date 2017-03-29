@@ -62,7 +62,7 @@ var BlackNodeMediator = cc.Class({
         this.mainControll.getSocketServerMediator().getRoomsList();
     },
     onExitBtn:function(event){
-        cc.game.exit();
+        cc.game.end();
     },
     //添加输入名字节点
     addInputUserNamePanel:function(){

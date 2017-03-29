@@ -18,17 +18,20 @@ var ScoketServer = cc.Class({
         this.clientNums = 0;
         this.roomName = "";
         this.userId = null;
+        this.timer = 0;
+        this.serverAddress = "http://110.83.31.32:3000";
         // this.openClient();
     },
     openClient:function(){
         var self = this;
         var socket = null;
         if(!cc.sys.isNative){
-            this.socket = socket = io("http://192.168.100.9:3000");
+            this.socket = socket = io(this.serverAddress);
         }
         else{
-            this.socket = socket = SocketIO.connect("http://192.168.100.9:3000");
+            this.socket = socket = SocketIO.connect(this.serverAddress);
         }
+
         //连接成功
         socket.on("connected",function(userData){
             self.connectServer = true;
@@ -196,6 +199,14 @@ var ScoketServer = cc.Class({
         for(let i in eventList){
             NoticeCenter.dispatchEvent(i,eventList[i]);
         }
+    },
+    update:function(dt){
+        this.timer+=dt;
+        if(this.timer < 0.8) return;
+        this.timer-=0.8;
+        // if(cc.sys.isNative && !this.connectServer){
+        //     this.openClient();
+        // }
     }
 });
 module.exports = ScoketServer;

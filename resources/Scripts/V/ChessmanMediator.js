@@ -112,9 +112,11 @@ cc.Class({
         return this.chessData.chessConfig;
     },
     eatNode:function(){
+        var chessConfig = this.chessData.chessConfig;
         if(!this.empty){
             this.setChessNodeToEmpty();
         }
+        return chessConfig;
     },
     setChessNodeToEmpty:function(){
         this.empty = true;

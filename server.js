@@ -33,8 +33,9 @@ io.on('connection',function(socket){
 	});
 	//创建分组
 	socket.on("createRoom",function(groupObj){
+		groupObj = analyData(groupObj);
 		//判断房间名是否重复
-		if(roomsList[groupObj.roomName]) {
+		if(roomsList[groupObj.roomName] && roomIsExist(groupObj.roomName)) {
 			socket.emit("createRoomCB",{res:false,msg:"房间名已存在，创建失败！",data:{}});
 			return;
 		}
@@ -48,6 +49,7 @@ io.on('connection',function(socket){
 	});	
 	//加入分组
 	socket.on("joinRoom",function(roomData){
+		roomData = analyData(roomData);
 		console.log("userName "+roomData.userName+" join "+roomData.roomName);
 		var res = joinRoom(socket,roomData);
 		//房间人数发生改变
@@ -55,6 +57,7 @@ io.on('connection',function(socket){
 	});
 	//离开分组
 	socket.on("leaveRoom",function(groupObj){
+		groupObj = analyData(groupObj);
 		console.log("userName "+groupObj.userName+" leave "+groupObj.roomName);
 		leaveRoom(socket,groupObj);
 		//房间人数发生改变
@@ -66,6 +69,7 @@ io.on('connection',function(socket){
 	
 	//解散分组
 	socket.on("disBandRoom",function(groupObj){
+		groupObj = analyData(groupObj);
 		console.log("userName "+groupObj.userName+" disBandRoom "+groupObj.roomName);		
 		leaveRoom(socket,groupObj);
 		disBandRoom(socket,groupObj);
@@ -73,23 +77,27 @@ io.on('connection',function(socket){
 	
 	//初始化其它玩家棋盘
 	socket.on("freshOtherUserCheckBoard",function(roomData){
+		roomData = analyData(roomData);
 		console.log("freshOtherUserCheckBoard");
 		socket.broadcast.to(roomData.roomName).emit('freshOtherUserCheckBoard',roomData);
 	});
 	//选择某个棋
 	socket.on("selectOneChess",function(roomData){
+		roomData = analyData(roomData);
 		stepList[roomData.roomName]++;
 		console.log("selectOneChess RoomName: "+roomData.roomName + " Step: "+stepList[roomData.roomName]);
 		socket.broadcast.to(roomData.roomName).emit('selectOneChess',roomData);
 	});
 	//设置面板
 	socket.on("setPanel",function(setData){
+		setData = analyData(setData);
 		console.log("setPanel");
 		io.sockets.in(setData.roomName).emit('setPanel',setData);
 	});
 	//io.sockets.manager.rooms 用 io.sockets.adapter.rooms 代替
 	//io.sockets.clients('particular room') 换成了 io.sockets.adapter.rooms['private_room'];
 	socket.on('gameInfomation',function(msg){
+		msg = analyData(msg);
 		console.log("gameInfomation type:",msg.type);	
 		switch(msg.type){
 			//房间列表
@@ -104,6 +112,10 @@ io.on('connection',function(socket){
 
 function getPlayerIndex (roomName){
 	return io.sockets.adapter.rooms[roomName].length;
+}
+
+function roomIsExist (roomName){
+	return io.sockets.adapter.rooms[roomName] || false;
 }
 
 function disBandRoom (socket,data){
@@ -147,6 +159,14 @@ function gameInfomationChange (socket,type){
 function getRoomSizeByName (roomName){	
 	if(!io.sockets.adapter.rooms[roomName]) return false;
 	return io.sockets.adapter.rooms[roomName].length;
+}
+
+function analyData (data){
+	//解决web端跟native端不一致问题
+	try {
+			data = JSON.parse(data);                
+		} catch (error) {}
+	return data;
 }
 
 http.listen(3000,function(){
